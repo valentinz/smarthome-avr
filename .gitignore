@@ -15,3 +15,11 @@
 *.exe
 *.out
 *.app
+
+# uC specific
+*.elf
+*.lss
+*.lst
+*.map
+*.sym
+.dep
