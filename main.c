@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 
 #define F_CPU 16000000L
-#define BAUD 38400UL
+#define BAUD 9600UL
 
 #define UBRR_VAL ((F_CPU+BAUD*8)/(BAUD*16)-1)   // clever runden
 #define BAUD_REAL (F_CPU/(16*(UBRR_VAL+1)))     // Reale Baudrate
