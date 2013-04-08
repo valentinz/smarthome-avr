@@ -18,20 +18,13 @@ void uart_init(void);
 
 int uart_putc(unsigned char c);
 uint8_t uart_getc(void);
-void delay_ms(uint16_t x);
 
 int main (void) {
 	DDRC = 0xFF;
+	PORTC = 0x00;
 	uart_init();
 
 	while(1) {
-		uart_putc('h');
-		uart_putc('a');
-		uart_putc('l');
-		uart_putc('l');
-		uart_putc('o');
-		uart_putc(' ');
-		delay_ms(200);
 	}
    
 	return 0;
@@ -53,24 +46,57 @@ void uart_init(void) {
 
 ISR (USART_RXC_vect) {
 	unsigned char received = UDR;
-	unsigned char result = 0xFF;
+	unsigned char result = 0x00;
 
-	PORTC = result;
-/*	switch (command) {
-		case 0x01:
-			switch (received) {
-				case 0: result = 0xFF; break;
-				case 1: result = 0x00; break;
-				case 2: result = 0xFF; break;
-				case 3: result = 0x00; break;
+	switch (command) {
+	case 0x01: // Write Aeration level 0x01 [Level,8-bit]
+		   // Result: 0x01
+		result = PORTC;
+		/*
+		 *	Dec	PC7	PC6	PC5	PC4
+		 *	3	0 	1 	1 	x	Level 0
+		 *	2	0 	1 	0 	x	Level 1
+		 *	0	0 	0 	0 	x	Level 2
+		 *	4	1 	0 	0 	x	Level 3 
+		 *	x => no change
+		 */
+		switch (received) {
+		case 0: result &= 0x7F; result |= 0x60; break;
+		case 1: result &= 0x5F; result |= 0x40; break;
+		case 2: result &= 0x1F; break;
+		case 3: result &= 0x9F; result |= 0x80; break;
+		}
+		
+		PORTC = result;
+		uart_putc(0x01);
+		command = 0x00;
+		break;
+	case 0x02: 
+	default:
+		switch (received) {
+		case 0x01: // Write Aeration level 0x01 [Level,8-bit]
+			   // Result: 0x01
+			command = received;
+			uart_putc(0x00);
+			break;
+		case 0x02: // Get Aeration level 0x02
+			   // Result: 0x00 [Level,8-bit] [~Level,8-bit]
+			switch (PORTC >> 5) {
+			case 3:  result = 0x00; break;
+			case 2:  result = 0x01; break;
+			case 0:  result = 0x02; break;
+			case 4:  result = 0x03; break;
+			default: result = 0xFF; break;
 			}
-			
-			PORTC = result;
-			command = 0x00;
+			uart_putc(0x00);
+			uart_putc(result);
+			uart_putc(~result);
 			break;
 		default:
-			command = received;
-	}*/
+			command = 0x00;
+			uart_putc(0xFF);
+		}
+	}
 }
 
 int uart_putc(unsigned char c) {
@@ -85,16 +111,4 @@ uint8_t uart_getc(void) {
 	while (!(UCSRA & (1<<RXC)))   // warten bis Zeichen verfuegbar
 		;
 	return UDR;                   // Zeichen aus UDR an Aufrufer zurueckgeben
-}
-
-// General short delays
-void delay_ms(uint16_t x) {
-	uint8_t y, z;
-	for ( ; x > 0 ; x--){
-		for ( y = 0 ; y < 80 ; y++){
-			for ( z = 0 ; z < 40 ; z++){
-				asm volatile ("nop");
-			}
-		}
-	}
 }
