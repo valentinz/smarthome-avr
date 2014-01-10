@@ -53,7 +53,7 @@ ISR (USART_RXC_vect) {
 		   // Result: 0x01
 		result = PORTC;
 		/*
-		 *	Dec	PC7	PC6	PC5	PC4
+		 *	Dec	PC3	PC2	PC1	PC0
 		 *	3	0 	1 	1 	x	Level 0
 		 *	2	0 	1 	0 	x	Level 1
 		 *	0	0 	0 	0 	x	Level 2
@@ -61,10 +61,10 @@ ISR (USART_RXC_vect) {
 		 *	x => no change
 		 */
 		switch (received) {
-		case 0: result &= 0x7F; result |= 0x60; break;
-		case 1: result &= 0x5F; result |= 0x40; break;
-		case 2: result &= 0x1F; break;
-		case 3: result &= 0x9F; result |= 0x80; break;
+		case 0: result &= 0xF7; result |= 0x06; break;
+		case 1: result &= 0xF5; result |= 0x04; break;
+		case 2: result &= 0xF1; break;
+		case 3: result &= 0xF9; result |= 0x08; break;
 		}
 		
 		PORTC = result;
@@ -81,7 +81,7 @@ ISR (USART_RXC_vect) {
 			break;
 		case 0x02: // Get Aeration level 0x02
 			   // Result: 0x00 [Level,8-bit] [~Level,8-bit]
-			switch (PORTC >> 5) {
+			switch (PORTC >> 1) {
 			case 3:  result = 0x00; break;
 			case 2:  result = 0x01; break;
 			case 0:  result = 0x02; break;

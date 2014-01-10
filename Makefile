@@ -38,7 +38,7 @@
 
 
 # MCU name
-MCU = atmega32
+MCU = atmega8
 
 # Main Oscillator Frequency
 # This is only used to define F_OSC in all assembler and c-sources.
@@ -177,10 +177,10 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 #
-AVRDUDE_PROGRAMMER = usbasp
+AVRDUDE_PROGRAMMER = avrispmkII
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = /dev/parport0    # programmer connected to serial device
+AVRDUDE_PORT = usb    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
